@@ -54,12 +54,12 @@ class ForensicsGUI:
 
     def _scan(self):
         now = datetime.now()
-        timestamp = now.strftime("%Y-%m-%d_%H%M")
-        base_name = f"report_{timestamp}"
+        current_time_stamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+        base_name = f"report_{current_time_stamp}"
         track_name = self.track_entry.get().strip()
 
         if track_name:
-            base_name += f"_{track_name.replace(' ', '_')}"
+            base_name += f"_{track_name.replace(' ', '_').split(".exe")[0]}"
 
         output_dir = os.path.join("Report", base_name)
         os.makedirs(output_dir, exist_ok=True)
