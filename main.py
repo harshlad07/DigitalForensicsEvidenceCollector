@@ -4,7 +4,7 @@ import argparse
 from datetime import datetime
 from colorama import init, Fore, Style
 init(autoreset=True)
-from modules.chart_generator import plot_monitoring_data
+from modules.chart_generator import plot_monitoring_data,plot_visited_domains
 from modules.data_collector import (
     collect_system_info,
     collect_running_processes,
@@ -62,7 +62,6 @@ def generate_forensic_report(options):
                 json.dump(connections, f, indent=4)
 
             # 📊 Plot chart of visited domains
-            from chart_generator import plot_visited_domains
             plot_visited_domains(net_path, output_dir)
 
 
