@@ -1,26 +1,27 @@
 # 🧾 Digital Forensics Evidence Collector
 
-A cross-platform Python-based tool to collect volatile and non-volatile digital evidence from a system. Designed for use in incident response, digital forensics investigations, system auditing, and cybersecurity labs.
+A cross-platform Python-based tool for collecting volatile and non-volatile evidence during incident response, forensic investigations, or audit automation. Now includes a **Tkinter-based GUI** for easier use.
 
 ---
 
 ## 📌 Features
 
-- 🖥️ **System Info** — OS, CPU, memory, hostname, and uptime
-- ⚙️ **Running Processes** — Full process list with PID, name, cmdline
-- 🌐 **Network Connections** — Open ports, IPs, and active sessions
-- 🔌 **USB History** — Devices connected (Windows only)
-- 📁 **Recent Files** — Recently accessed or modified files
-- 🔍 **Track Specific Process**:
-  - Static metadata (name, PID, cmdline, children)
-  - Live monitoring of CPU/Memory usage
-  - Open files and sockets
-  - Logs and activity footprint
-- 📊 **Chart Generation** — CPU and Memory usage charts (`.png`)
-- 📂 **Structured Output**:
-  - Organized folders by module
-  - Auto-timestamped to avoid overwrite
-- 🧾 **Report Archiving** — Hash + ZIP archive
+- 🖥️ System Info — OS, CPU, memory, uptime
+- ⚙️ Running Processes — Full list with PID, command-line
+- 🌐 Network Connections — Active IPs, ports, domain resolution
+- 🔌 USB Device History — Devices connected (Windows only)
+- 📁 Recent Files — Recently accessed or modified files
+- 🔍 Track Specific Process:
+  - Metadata (name, PID, children)
+  - CPU & Memory monitoring
+  - Open files and logs
+  - Live usage charts
+- 📊 Chart Generation — Memory & CPU graphs, Top Visited Domains
+- 📂 Output:
+  - Auto timestamped folders
+  - Structured JSON exports
+  - Optional ZIP + SHA-256 hash
+- 🖼️ **Live GUI** with Tkinter — Visual interface to run modules without CLI
 
 ---
 
@@ -29,10 +30,7 @@ A cross-platform Python-based tool to collect volatile and non-volatile digital 
 ### Requirements
 
 - Python 3.7+
-- OS Support:
-  - ✅ Windows (full support)
-  - ✅ Linux (partial for USB/logs)
-  - ⚠️ WSL (limited log access)
+- OS: ✅ Windows, ✅ Linux, ⚠️ WSL (partial support)
 
 ### Install Dependencies
 
