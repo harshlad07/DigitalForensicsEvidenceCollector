@@ -3,19 +3,19 @@ import json
 import argparse
 from datetime import datetime
 
-from data_collector import (
+from modules.chart_generator import plot_monitoring_data
+from modules.data_collector import (
+    collect_system_info,
     collect_running_processes,
     collect_network_connections,
     find_process_by_name_or_pid,
-    collect_system_info,
     get_process_details,
     get_usb_history,
     get_logs_for_pid,
     monitor_process_live,
     get_recent_files
 )
-from chart_generator import plot_monitoring_data
-from utils import hash_file, compress_report
+from modules.utils import hash_file, compress_report
 
 def generate_forensic_report(options):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
