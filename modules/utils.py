@@ -1,7 +1,8 @@
 import hashlib
 from zipfile import ZipFile
 import os
-
+from colorama import init, Fore, Style
+init(autoreset=True)
 def hash_file(filepath):
     sha256 = hashlib.sha256()
     try:
@@ -28,4 +29,5 @@ def compress_report(report_file, hash_value,output_dir):
     # Clean up intermediate hash file
     os.remove(hash_file_path)
 
-    print(f"[✔] Report and hash compressed into {zip_name}")
+    print(Fore.MAGENTA + Style.BRIGHT + f"[✔] Report and hash compressed into {zip_name}")
+    print(Fore.BLUE + Style.BRIGHT + f"*"*20)

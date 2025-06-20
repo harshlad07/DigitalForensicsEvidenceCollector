@@ -112,12 +112,15 @@ class ForensicsGUI:
         if track_name:
             proc = find_process_by_name_or_pid(track_name)
             if proc:
+                print(Fore.BLUE + Style.BRIGHT +"\n" +f"*"*20)
+                print(Fore.GREEN + Style.BRIGHT + f"[✔] Tracking process: {proc.name()} (PID {proc.pid})")
                 monitor_secs = int(self.monitor_entry.get().strip())
                 track_report = {
                     "process_details": get_process_details(proc),
                     "logs": get_logs_for_pid(proc.pid)
                 }
                 if monitor_secs > 0:
+                    print(Fore.YELLOW + Style.BRIGHT + f"[⏳] Monitoring for {monitor_secs} seconds...")
                     track_report["live_monitoring"] = monitor_process_live(proc, monitor_secs)
                 os.makedirs(f"{output_dir}/tracked", exist_ok=True)
                 with open(f"{output_dir}/tracked/{proc.name()}_{proc.pid}.json", "w") as f:

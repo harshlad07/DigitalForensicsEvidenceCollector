@@ -2,7 +2,8 @@ import os
 import json
 import argparse
 from datetime import datetime
-
+from colorama import init, Fore, Style
+init(autoreset=True)
 from modules.chart_generator import plot_monitoring_data
 from modules.data_collector import (
     collect_system_info,
@@ -84,14 +85,15 @@ def generate_forensic_report(options):
     if options.track:
         proc = find_process_by_name_or_pid(options.track)
         if proc:
-            print(f"[✔] Tracking process: {proc.name()} (PID {proc.pid})")
+            print(Fore.BLUE + Style.BRIGHT +"\n" +f"*"*20)
+            print(Fore.GREEN + Style.BRIGHT + f"[✔] Tracking process: {proc.name()} (PID {proc.pid})")
             proc_report = {
                 "process_details": get_process_details(proc),
                 "system_logs": get_logs_for_pid(proc.pid)
             }
 
             if options.monitor > 0:
-                print(f"[⏳] Monitoring for {options.monitor} seconds...")
+                print(Fore.YELLOW + Style.BRIGHT + f"[⏳] Monitoring for {options.monitor} seconds...")
                 proc_report["live_monitoring"] = monitor_process_live(proc, options.monitor)
 
             safe_name = proc.name().replace(" ", "_")
@@ -99,11 +101,11 @@ def generate_forensic_report(options):
             os.makedirs(f"{output_dir}/tracked", exist_ok=True)
             with open(report_path, "w") as f:
                 json.dump(proc_report, f, indent=4)
-            print(f"[✔] Process report saved to {report_path}")
+            print(Fore.GREEN + Style.BRIGHT + f"[✔] Process report saved to {report_path}")
             if options.monitor > 0:
                 plot_monitoring_data(report_path,f'{output_dir}')
         else:
-            print("[✘] Process not found.")
+            print(Fore.RED + Style.BRIGHT + "[✘] Process not found.")
     
 
     # Save combined report
@@ -113,11 +115,11 @@ def generate_forensic_report(options):
     with open(report_path, "w") as f:
         json.dump(combined_report, f, indent=4)
 
-    print("[✔] Combined JSON report created.")
+    print(Fore.GREEN + Style.BRIGHT + "[✔] Combined JSON report created.")
 
     # Hash & compress
     sha256_hash = hash_file(report_path)
-    print(f"[✔] SHA-256 Hash: {sha256_hash}")
+    print(Fore.GREEN + Style.BRIGHT + f"[✔] SHA-256 Hash: {sha256_hash}")
     compress_report(report_path, sha256_hash,output_dir)
 
 def parse_arguments():
@@ -142,6 +144,6 @@ if __name__ == "__main__":
 
     # If no flags are passed, show help and exit
     if not any(vars(options).values()):
-        print("[!] No options provided. Use --help to see available options.")
+        print(Fore.RED + Style.BRIGHT + "\n[!] No options provided. Use --help to see available options.")
     else:
         generate_forensic_report(options)

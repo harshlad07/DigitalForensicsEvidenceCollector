@@ -3,7 +3,8 @@ import os
 import matplotlib.pyplot as plt
 from collections import Counter
 from datetime import datetime
-
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
 def plot_visited_domains(json_path, output_dir):
     with open(json_path, "r") as f:
