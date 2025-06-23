@@ -14,7 +14,9 @@ from modules.data_collector import (
     get_usb_history,
     get_logs_for_pid,
     monitor_process_live,
-    get_recent_files
+    get_recent_files,
+    collect_registry_snapshot,
+    compare_registry_snapshots
 )
 from modules.utils import hash_file, compress_report
 
@@ -60,8 +62,6 @@ def generate_forensic_report(options):
             net_path = f"{output_dir}/network/net_connections.json"
             with open(net_path, "w") as f:
                 json.dump(connections, f, indent=4)
-
-            # 📊 Plot chart of visited domains
             plot_visited_domains(net_path, output_dir)
 
 
@@ -105,18 +105,30 @@ def generate_forensic_report(options):
                 plot_monitoring_data(report_path,f'{output_dir}')
         else:
             print(Fore.RED + Style.BRIGHT + "[✘] Process not found.")
+    if options.registry:
+        os.makedirs(f"{output_dir}/registry", exist_ok=True)
+        snapshot = collect_registry_snapshot()
+        snapshot_path = f"{output_dir}/registry/current_snapshot.json"
+        with open(snapshot_path, "w") as f:
+            json.dump(snapshot, f, indent=4)
+
+        # Compare with last snapshot if exists
+        prev_snapshots = [f for f in os.listdir("output") if "registry" in f.lower()]
+        if prev_snapshots:
+            last_snapshot_path = os.path.join("output", prev_snapshots[-1], "registry", "current_snapshot.json")
+            if os.path.exists(last_snapshot_path):
+                with open(last_snapshot_path, "r") as f:
+                    old = json.load(f)
+                diffs = compare_registry_snapshots(old, snapshot)
+                with open(f"{output_dir}/registry/diff.json", "w") as f:
+                    json.dump(diffs, f, indent=4)
+                print(Fore.YELLOW + "[!] Registry comparison complete.")
+
     
-
-    # Save combined report
-    # report_path = f"{output_dir}/forensic_report.json"
     report_path = os.path.join(output_dir, "forensic_report.json")
-
     with open(report_path, "w") as f:
         json.dump(combined_report, f, indent=4)
-
     print(Fore.GREEN + Style.BRIGHT + "[✔] Combined JSON report created.")
-
-    # Hash & compress
     sha256_hash = hash_file(report_path)
     print(Fore.GREEN + Style.BRIGHT + f"[✔] SHA-256 Hash: {sha256_hash}")
     compress_report(report_path, sha256_hash,output_dir)
@@ -131,17 +143,13 @@ def parse_arguments():
     parser.add_argument("--sysinfo", action="store_true", help="Collect basic system information")
     parser.add_argument("--track", type=str, help="Track a process by name or PID")
     parser.add_argument("--monitor", type=int, default=0, help="Monitor tracked process for N seconds")
+    parser.add_argument("--registry", action="store_true", help="Collect and compare registry snapshot (Windows only)")
     parser.add_argument("--save-detailed", action="store_true", help="Save each module's data into separate structured files and folders.")
-
-
     args = parser.parse_args()
     return args
 
-
 if __name__ == "__main__":
     options = parse_arguments()
-
-    # If no flags are passed, show help and exit
     if not any(vars(options).values()):
         print(Fore.RED + Style.BRIGHT + "\n[!] No options provided. Use --help to see available options.")
     else:

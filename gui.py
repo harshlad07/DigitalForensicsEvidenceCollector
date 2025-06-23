@@ -21,11 +21,12 @@ class ForensicsGUI:
             "Network": tk.BooleanVar(),
             "USB": tk.BooleanVar(),
             "Recents": tk.BooleanVar(),
-            "Save Detailed": tk.BooleanVar()
+            "Save Detailed": tk.BooleanVar(),
+            "Compare Registry Changes":tk.BooleanVar()
         }
-
         row = 0
         for key, var in self.options.items():
+            # tk.Checkbutton(root, text="Compare Registry Changes", variable=self.options["Compare Registry Changes"]).grid(row=row, column=0, sticky="w", padx=10)
             tk.Checkbutton(root, text=key, variable=var).grid(row=row, column=0, sticky="w", padx=10)
             row += 1
 
@@ -126,6 +127,27 @@ class ForensicsGUI:
                 with open(f"{output_dir}/tracked/{proc.name()}_{proc.pid}.json", "w") as f:
                     json.dump(track_report, f, indent=4)
                 plot_monitoring_data(f"{output_dir}/tracked/{proc.name()}_{proc.pid}.json",output_dir)
+
+        if self.options["Compare Registry Changes"].get():
+            print(Fore.CYAN + "[ℹ️] Capturing registry snapshot...")
+            snapshot = collect_registry_snapshot()
+            os.makedirs(f"{output_dir}/registry", exist_ok=True)
+            current_path = f"{output_dir}/registry/current_snapshot.json"
+            with open(current_path, "w") as f:
+                json.dump(snapshot, f, indent=4)
+
+            # Compare with previous if exists
+            prev_dirs = sorted([d for d in os.listdir("Report") if d != os.path.basename(output_dir)])
+            for prev in reversed(prev_dirs):
+                prev_path = os.path.join("output", prev, "registry", "current_snapshot.json")
+                if os.path.exists(prev_path):
+                    with open(prev_path, "r") as f:
+                        old_snapshot = json.load(f)
+                    diffs = compare_registry_snapshots(old_snapshot, snapshot)
+                    with open(f"{output_dir}/registry/diff.json", "w") as f:
+                        json.dump(diffs, f, indent=4)
+                    print(Fore.YELLOW + "[✔] Registry comparison complete.")
+                    break
 
         # Save main JSON
         report_path = os.path.join(output_dir, "forensic_report.json")

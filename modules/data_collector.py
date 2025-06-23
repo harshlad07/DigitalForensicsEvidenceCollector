@@ -1,5 +1,5 @@
 import os
-import psutil, time
+import psutil, time, winreg
 import platform
 import subprocess
 import socket
@@ -158,3 +158,53 @@ def collect_system_info():
         "processor": platform.processor(),
         "architecture": platform.architecture(),
     }
+
+
+def snapshot_registry_keys(base_key, subkey=""):
+    keys = {}
+    try:
+        with winreg.OpenKey(base_key, subkey) as handle:
+            for i in range(winreg.QueryInfoKey(handle)[0]):
+                try:
+                    sub_k = winreg.EnumKey(handle, i)
+                    full_subkey = f"{subkey}\\{sub_k}" if subkey else sub_k
+                    keys[full_subkey] = snapshot_registry_keys(base_key, full_subkey)
+                except Exception:
+                    continue
+            for j in range(winreg.QueryInfoKey(handle)[1]):
+                try:
+                    value_name, value_data, value_type = winreg.EnumValue(handle, j)
+                    keys.setdefault(subkey, {})[value_name] = str(value_data)
+                except Exception:
+                    continue
+    except FileNotFoundError:
+        pass
+    return keys
+
+def collect_registry_snapshot():
+    snapshot = {}
+    root_keys = {
+        "HKEY_LOCAL_MACHINE": winreg.HKEY_LOCAL_MACHINE,
+        "HKEY_CURRENT_USER": winreg.HKEY_CURRENT_USER,
+    }
+    for name, hkey in root_keys.items():
+        snapshot[name] = snapshot_registry_keys(hkey)
+    return snapshot
+
+def compare_registry_snapshots(old, new):
+    added, removed, modified = {}, {}, {}
+
+    def deep_diff(o, n, path=""):
+        if isinstance(o, dict) and isinstance(n, dict):
+            for key in n.keys() - o.keys():
+                added[path + "\\" + key] = n[key]
+            for key in o.keys() - n.keys():
+                removed[path + "\\" + key] = o[key]
+            for key in o.keys() & n.keys():
+                deep_diff(o[key], n[key], path + "\\" + key)
+        else:
+            if o != n:
+                modified[path] = {"from": o, "to": n}
+
+    deep_diff(old, new)
+    return {"added": added, "removed": removed, "modified": modified}
